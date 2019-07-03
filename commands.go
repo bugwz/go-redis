@@ -5,7 +5,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/go-redis/redis/internal"
+	"github.com/hustfisher/redis/internal"
 )
 
 func usePrecise(dur time.Duration) bool {
@@ -47,6 +47,15 @@ func appendArgs(dst, src []interface{}) []interface{} {
 	}
 	return dst
 }
+
+// SlotStatus a status for slot migrating
+type SlotStatus string
+
+// SlotStatusMigrating SlotStatusStable status for cmd SlotsSetSlot
+const (
+	SlotStatusMigrating = "migrating"
+	SlotStatusStable    = "stable"
+)
 
 type Cmdable interface {
 	Pipeline() Pipeliner
@@ -292,6 +301,13 @@ type Cmdable interface {
 	ReadOnly() *StatusCmd
 	ReadWrite() *StatusCmd
 	MemoryUsage(key string, samples ...int) *IntCmd
+
+	// used for slots migrate
+	SlotsSetSlot(slot int, slotStatus SlotStatus) *BoolCmd
+	SlotsMgrtSlot(host string, port int, timeout time.Duration, slot int, keyNum int) *IntSliceCmd
+	SlotsHashKey(keys ...string) *IntSliceCmd
+	SlotsInfo(startSlot int, count int) *IntSliceCmd
+	SlotsMgrtState(startSlot int, count int) *StringSliceCmd
 }
 
 type StatefulCmdable interface {
@@ -2575,6 +2591,47 @@ func (c cmdable) MemoryUsage(key string, samples ...int) *IntCmd {
 		args = append(args, "SAMPLES", samples[0])
 	}
 	cmd := NewIntCmd(args...)
+	c(cmd)
+	return cmd
+}
+
+//------------------------------------------------------------------------------
+
+func (c cmdable) SlotsSetSlot(slot int, slotStatus SlotStatus) *BoolCmd {
+	args := []interface{}{"slotssetslot", slot, slotStatus}
+	cmd := NewBoolCmd(args)
+	c(cmd)
+	return cmd
+}
+
+func (c cmdable) SlotsMgrtSlot(host string, port int, timeout time.Duration, slot int, keyNum int) *IntSliceCmd {
+	args := []interface{}{"slotsmgrtslot", host, port, timeout, slot, keyNum}
+	cmd := NewIntSliceCmd(args)
+	c(cmd)
+	return cmd
+}
+
+func (c cmdable) SlotsHashKey(keys ...string) *IntSliceCmd {
+	args := make([]interface{}, 1+len(keys))
+	args[0] = "slotshashkey"
+	for i, key := range keys {
+		args[1+i] = key
+	}
+	cmd := NewIntSliceCmd(args)
+	c(cmd)
+	return cmd
+}
+
+func (c cmdable) SlotsInfo(startSlot int, count int) *IntSliceCmd {
+	args := []interface{}{"slotsinfo", startSlot, count}
+	cmd := NewIntSliceCmd(args)
+	c(cmd)
+	return cmd
+}
+
+func (c cmdable) SlotsMgrtState(startSlot int, count int) *StringSliceCmd {
+	args := []interface{}{"slotsmgrtstate", startSlot, count}
+	cmd := NewStringSliceCmd(args)
 	c(cmd)
 	return cmd
 }

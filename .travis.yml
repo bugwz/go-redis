@@ -17,4 +17,4 @@ matrix:
 env:
   - GO111MODULE=on
 
-go_import_path: github.com/go-redis/redis
+go_import_path: github.com/go-rehdis/redis
