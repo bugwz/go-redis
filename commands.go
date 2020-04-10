@@ -303,7 +303,7 @@ type Cmdable interface {
 	MemoryUsage(key string, samples ...int) *IntCmd
 
 	// used for slots migrate
-	SlotsSetSlot(slot int, slotStatus SlotStatus) *BoolCmd
+	SlotsSetSlot(slot int, slotStatus SlotStatus) *StatusCmd
 	SlotsMgrtSlot(host string, port int, timeout time.Duration, slot int, keyNum int) *IntSliceCmd
 	SlotsHashKey(keys ...string) *IntSliceCmd
 	SlotsInfo(startSlot int, count int) *IntSliceCmd
@@ -2597,9 +2597,9 @@ func (c cmdable) MemoryUsage(key string, samples ...int) *IntCmd {
 
 //------------------------------------------------------------------------------
 
-func (c cmdable) SlotsSetSlot(slot int, slotStatus SlotStatus) *BoolCmd {
+func (c cmdable) SlotsSetSlot(slot int, slotStatus SlotStatus) *StatusCmd {
 	args := []interface{}{"slotssetslot", slot, slotStatus}
-	cmd := NewBoolCmd(args)
+	cmd := NewStatusCmd(args)
 	c(cmd)
 	return cmd
 }
