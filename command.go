@@ -442,6 +442,67 @@ func (cmd *IntSliceCmd) readReply(rd *proto.Reader) error {
 
 //------------------------------------------------------------------------------
 
+type SlotsMgrtStateCmd struct {
+	baseCmd
+
+	val [][]int64
+}
+
+var _ Cmder = (*SlotsMgrtStateCmd)(nil)
+
+func NewSlotsMgrtStateCmd(args ...interface{}) *SlotsMgrtStateCmd {
+	return &SlotsMgrtStateCmd{
+		baseCmd: baseCmd{_args: args},
+	}
+}
+
+func (cmd *SlotsMgrtStateCmd) Val() [][]int64 {
+	return cmd.val
+}
+
+func (cmd *SlotsMgrtStateCmd) Result() ([][]int64, error) {
+	return cmd.val, cmd.err
+}
+
+func (cmd *SlotsMgrtStateCmd) String() string {
+	return cmdString(cmd, cmd.val)
+}
+
+func (cmd *SlotsMgrtStateCmd) readReply(rd *proto.Reader) error {
+	_, cmd.err = rd.ReadArrayReply(func(rd *proto.Reader, n int64) (interface{}, error) {
+		cmd.val = make([][]int64, n)
+		for i := 0; i < len(cmd.val); i++ {
+			vv, err := rd.ReadArrayReply(slotsMgrtStateParser)
+			if err != nil {
+				return nil, err
+			}
+			v := vv.([]int64)
+			cmd.val[i] = v
+		}
+		return nil, nil
+	})
+	return cmd.err
+}
+
+func slotsMgrtStateParser(rd *proto.Reader, n int64) (interface{}, error) {
+	if n != 2 {
+		return nil, fmt.Errorf("redis: got %d elements in SlotsMgrtState reply, wanted 2", n)
+	}
+
+	counts := make([]int64, n)
+	for i := 0; i < len(counts); i++ {
+		c, err := rd.ReadIntReply()
+		if err != nil {
+			return nil, err
+		}
+		counts[i] = c
+	}
+
+	return counts, nil
+}
+
+//------------------------------------------------------------------------------
+
 type DurationCmd struct {
 	baseCmd
 

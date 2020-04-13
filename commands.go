@@ -2,9 +2,7 @@ package redis
 
 import (
 	"errors"
-	"fmt"
 	"io"
-	"strconv"
 	"time"
 
 	"github.com/hustfisher/redis/internal"
@@ -309,7 +307,7 @@ type Cmdable interface {
 	SlotsMgrtSlot(host string, port int, timeout time.Duration, slot int, keyNum int) *IntSliceCmd
 	SlotsHashKey(keys ...string) *IntSliceCmd
 	SlotsInfo(startSlot int, count int) *IntSliceCmd
-	SlotsMgrtState(startSlot int, count int) *StringSliceCmd
+	SlotsMgrtState(startSlot int, count int) *SlotsMgrtStateCmd
 }
 
 type StatefulCmdable interface {
@@ -2600,17 +2598,17 @@ func (c cmdable) MemoryUsage(key string, samples ...int) *IntCmd {
 //------------------------------------------------------------------------------
 
 func (c cmdable) SlotsSetSlot(slot int, slotStatus SlotStatus) *StatusCmd {
-	slotStr := strconv.Itoa(slot)
-	statusStr := fmt.Sprintf("%s", slotStatus)
-	args := []interface{}{"slotssetslot", slotStr, statusStr}
-	cmd := NewStatusCmd(args)
+	// slotStr := strconv.Itoa(slot)
+	// statusStr := fmt.Sprintf("%s", slotStatus)
+	args := []interface{}{"slotssetslot", "2", "migrating"}
+	cmd := NewStatusCmd(args...)
 	c(cmd)
 	return cmd
 }
 
 func (c cmdable) SlotsMgrtSlot(host string, port int, timeout time.Duration, slot int, keyNum int) *IntSliceCmd {
 	args := []interface{}{"slotsmgrtslot", host, port, timeout, slot, keyNum}
-	cmd := NewIntSliceCmd(args)
+	cmd := NewIntSliceCmd(args...)
 	c(cmd)
 	return cmd
 }
@@ -2621,21 +2619,21 @@ func (c cmdable) SlotsHashKey(keys ...string) *IntSliceCmd {
 	for i, key := range keys {
 		args[1+i] = key
 	}
-	cmd := NewIntSliceCmd(args)
+	cmd := NewIntSliceCmd(args...)
 	c(cmd)
 	return cmd
 }
 
 func (c cmdable) SlotsInfo(startSlot int, count int) *IntSliceCmd {
 	args := []interface{}{"slotsinfo", startSlot, count}
-	cmd := NewIntSliceCmd(args)
+	cmd := NewIntSliceCmd(args...)
 	c(cmd)
 	return cmd
 }
 
-func (c cmdable) SlotsMgrtState(startSlot int, count int) *StringSliceCmd {
+func (c cmdable) SlotsMgrtState(startSlot int, count int) *SlotsMgrtStateCmd {
 	args := []interface{}{"slotsmgrtstate", startSlot, count}
-	cmd := NewStringSliceCmd(args)
+	cmd := NewSlotsMgrtStateCmd(args...)
 	c(cmd)
 	return cmd
 }
