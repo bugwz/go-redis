@@ -2,7 +2,9 @@ package redis
 
 import (
 	"errors"
+	"fmt"
 	"io"
+	"strconv"
 	"time"
 
 	"github.com/hustfisher/redis/internal"
@@ -2598,7 +2600,9 @@ func (c cmdable) MemoryUsage(key string, samples ...int) *IntCmd {
 //------------------------------------------------------------------------------
 
 func (c cmdable) SlotsSetSlot(slot int, slotStatus SlotStatus) *StatusCmd {
-	args := []interface{}{"slotssetslot", slot, slotStatus}
+	slotStr := strconv.Itoa(slot)
+	statusStr := fmt.Sprintf("%s", slotStatus)
+	args := []interface{}{"slotssetslot", slotStr, statusStr}
 	cmd := NewStatusCmd(args)
 	c(cmd)
 	return cmd
