@@ -10,7 +10,7 @@ func TestSlotSetStatus(t *testing.T) {
 		Password: "",
 		DB:       0,
 	})
-	statusRs := redisClient.SlotsSetSlot(1, SlotStatusMigrating)
+	statusRs := redisClient.SlotsSetSlot(1, SlotStatusStable)
 	t.Logf("\n++++++++++= SlotsSetSlot rs: %v", statusRs)
 
 	slotInfoRs := redisClient.SlotsInfo(0, 10)
