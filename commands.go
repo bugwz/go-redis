@@ -2,11 +2,16 @@ package redis
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"time"
 
 	"github.com/hustfisher/redis/internal"
+)
+
+// SlotStatusMigrating SlotStatusStable status for cmd SlotsSetSlot
+const (
+	SlotStatusMigrating = "migrating"
+	SlotStatusStable    = "stable"
 )
 
 func usePrecise(dur time.Duration) bool {
@@ -48,15 +53,6 @@ func appendArgs(dst, src []interface{}) []interface{} {
 	}
 	return dst
 }
-
-// SlotStatus a status for slot migrating
-type SlotStatus string
-
-// SlotStatusMigrating SlotStatusStable status for cmd SlotsSetSlot
-const (
-	SlotStatusMigrating = "migrating"
-	SlotStatusStable    = "stable"
-)
 
 type Cmdable interface {
 	Pipeline() Pipeliner
@@ -304,8 +300,8 @@ type Cmdable interface {
 	MemoryUsage(key string, samples ...int) *IntCmd
 
 	// used for slots migrate
-	SlotsSetSlot(slot int, slotStatus SlotStatus) *StatusCmd
-	SlotsMgrtSlot(host string, port int, timeout time.Duration, slot int, keyNum int) *IntSliceCmd
+	SlotsSetSlot(slot int, slotStatus string) *StatusCmd
+	SlotsMgrtSlot(host string, port int, timeoutInMills int, slot int, keyNum int64) *IntSliceCmd
 	SlotsHashKey(keys ...string) *IntSliceCmd
 	SlotsInfo(startSlot int, count int) *IntSliceCmd
 	SlotsMgrtState(startSlot int, count int) *SlotsMgrtStateCmd
@@ -2598,16 +2594,19 @@ func (c cmdable) MemoryUsage(key string, samples ...int) *IntCmd {
 
 //------------------------------------------------------------------------------
 
-func (c cmdable) SlotsSetSlot(slot int, slotStatus SlotStatus) *StatusCmd {
-	statusStr := fmt.Sprintf("%s", slotStatus)
-	args := []interface{}{"slotssetslot", slot, statusStr}
+// SlotsSetSlot 设置slot的状态，slotStatus必须为下列其一:
+// 1 SlotStatusMigrating("migrating")
+// 2 or SlotStatusStable ("stable")
+func (c cmdable) SlotsSetSlot(slot int, slotStatus string) *StatusCmd {
+	args := []interface{}{"slotssetslot", slot, slotStatus}
 	cmd := NewStatusCmd(args...)
 	c(cmd)
 	return cmd
 }
 
-func (c cmdable) SlotsMgrtSlot(host string, port int, timeout time.Duration, slot int, keyNum int) *IntSliceCmd {
-	args := []interface{}{"slotsmgrtslot", host, port, int64(timeout), slot, keyNum}
+// SlotsMgrtSlot migrate slot keys
+func (c cmdable) SlotsMgrtSlot(host string, port int, timeoutInMills int, slot int, keyNum int64) *IntSliceCmd {
+	args := []interface{}{"slotsmgrtslot", host, port, timeoutInMills, slot, keyNum}
 	cmd := NewIntSliceCmd(args...)
 	c(cmd)
 	return cmd
