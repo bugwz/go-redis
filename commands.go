@@ -2607,7 +2607,7 @@ func (c cmdable) SlotsSetSlot(slot int, slotStatus SlotStatus) *StatusCmd {
 }
 
 func (c cmdable) SlotsMgrtSlot(host string, port int, timeout time.Duration, slot int, keyNum int) *IntSliceCmd {
-	args := []interface{}{"slotsmgrtslot", host, port, timeout, slot, keyNum}
+	args := []interface{}{"slotsmgrtslot", host, port, int64(timeout), slot, keyNum}
 	cmd := NewIntSliceCmd(args...)
 	c(cmd)
 	return cmd
