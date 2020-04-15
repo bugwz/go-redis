@@ -442,37 +442,38 @@ func (cmd *IntSliceCmd) readReply(rd *proto.Reader) error {
 
 //------------------------------------------------------------------------------
 
-type SlotsMgrtStateCmd struct {
+// IntMatrixCmd int matrix, which is a two dimensional array
+type IntMatrixCmd struct {
 	baseCmd
 
 	val [][]int64
 }
 
-var _ Cmder = (*SlotsMgrtStateCmd)(nil)
+var _ Cmder = (*IntMatrixCmd)(nil)
 
-func NewSlotsMgrtStateCmd(args ...interface{}) *SlotsMgrtStateCmd {
-	return &SlotsMgrtStateCmd{
+func NewIntMatrixCmd(args ...interface{}) *IntMatrixCmd {
+	return &IntMatrixCmd{
 		baseCmd: baseCmd{_args: args},
 	}
 }
 
-func (cmd *SlotsMgrtStateCmd) Val() [][]int64 {
+func (cmd *IntMatrixCmd) Val() [][]int64 {
 	return cmd.val
 }
 
-func (cmd *SlotsMgrtStateCmd) Result() ([][]int64, error) {
+func (cmd *IntMatrixCmd) Result() ([][]int64, error) {
 	return cmd.val, cmd.err
 }
 
-func (cmd *SlotsMgrtStateCmd) String() string {
+func (cmd *IntMatrixCmd) String() string {
 	return cmdString(cmd, cmd.val)
 }
 
-func (cmd *SlotsMgrtStateCmd) readReply(rd *proto.Reader) error {
+func (cmd *IntMatrixCmd) readReply(rd *proto.Reader) error {
 	_, cmd.err = rd.ReadArrayReply(func(rd *proto.Reader, n int64) (interface{}, error) {
 		cmd.val = make([][]int64, n)
 		for i := 0; i < len(cmd.val); i++ {
-			vv, err := rd.ReadArrayReply(slotsMgrtStateParser)
+			vv, err := rd.ReadArrayReply(intMatrixParser)
 			if err != nil {
 				return nil, err
 			}
@@ -484,21 +485,21 @@ func (cmd *SlotsMgrtStateCmd) readReply(rd *proto.Reader) error {
 	return cmd.err
 }
 
-func slotsMgrtStateParser(rd *proto.Reader, n int64) (interface{}, error) {
+func intMatrixParser(rd *proto.Reader, n int64) (interface{}, error) {
 	if n != 2 {
 		return nil, fmt.Errorf("redis: got %d elements in SlotsMgrtState reply, wanted 2", n)
 	}
 
-	counts := make([]int64, n)
-	for i := 0; i < len(counts); i++ {
+	matrix := make([]int64, n)
+	for i := 0; i < len(matrix); i++ {
 		c, err := rd.ReadIntReply()
 		if err != nil {
 			return nil, err
 		}
-		counts[i] = c
+		matrix[i] = c
 	}
 
-	return counts, nil
+	return matrix, nil
 }
 
 //------------------------------------------------------------------------------

@@ -303,8 +303,8 @@ type Cmdable interface {
 	SlotsSetSlot(slot int, slotStatus string) *StatusCmd
 	SlotsMgrtSlot(host string, port int, timeoutInMills int, slot int, keyNum int64) *IntSliceCmd
 	SlotsHashKey(keys ...string) *IntSliceCmd
-	SlotsInfo(startSlot int, count int) *IntSliceCmd
-	SlotsMgrtState(startSlot int, count int) *SlotsMgrtStateCmd
+	SlotsInfo(startSlot int, count int) *IntMatrixCmd
+	SlotsMgrtState(startSlot int, count int) *IntMatrixCmd
 }
 
 type StatefulCmdable interface {
@@ -2623,16 +2623,16 @@ func (c cmdable) SlotsHashKey(keys ...string) *IntSliceCmd {
 	return cmd
 }
 
-func (c cmdable) SlotsInfo(startSlot int, count int) *IntSliceCmd {
+func (c cmdable) SlotsInfo(startSlot int, count int) *IntMatrixCmd {
 	args := []interface{}{"slotsinfo", startSlot, count}
-	cmd := NewIntSliceCmd(args...)
+	cmd := NewIntMatrixCmd(args...)
 	c(cmd)
 	return cmd
 }
 
-func (c cmdable) SlotsMgrtState(startSlot int, count int) *SlotsMgrtStateCmd {
+func (c cmdable) SlotsMgrtState(startSlot int, count int) *IntMatrixCmd {
 	args := []interface{}{"slotsmgrtstate", startSlot, count}
-	cmd := NewSlotsMgrtStateCmd(args...)
+	cmd := NewIntMatrixCmd(args...)
 	c(cmd)
 	return cmd
 }

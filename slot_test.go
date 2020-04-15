@@ -5,7 +5,8 @@ import (
 	"testing"
 )
 
-func TestSlotSetStatus(t *testing.T) {
+func TestSlotCmd(t *testing.T) {
+	t.Log("will start test slot cmds!")
 	srcHost := "10.77.9.52"
 	srcPort := 6380
 	redisClient := NewClient(&Options{
@@ -13,6 +14,12 @@ func TestSlotSetStatus(t *testing.T) {
 		Password: "",
 		DB:       0,
 	})
+	// for i := 0; i < 1024; i++ {
+	// 	key := fmt.Sprintf("k_%d", i)
+	// 	value := fmt.Sprintf("v_%d", i)
+	// 	setRs := redisClient.Set(key, value, time.Duration(1000*1000*1000*100))
+	// 	t.Logf("set %s %s, rs: %v", key, value, setRs)
+	// }
 	// statusRs := redisClient.SlotsSetSlot(1, SlotStatusStable)
 	statusRs := redisClient.SlotsSetSlot(1, SlotStatusMigrating)
 	t.Logf("\n++++++++++= SlotsSetSlot rs: %v", statusRs)
@@ -25,7 +32,7 @@ func TestSlotSetStatus(t *testing.T) {
 	hashKeyrs := redisClient.SlotsHashKey("k1", "k2")
 	t.Logf("\n++++++++++= SlotsHashKey rs: %v", hashKeyrs)
 
-	slotInfoRs := redisClient.SlotsInfo(0, 10)
+	slotInfoRs := redisClient.SlotsInfo(0, 1023)
 	t.Logf("\n++++++++++=  SlotsInfo rs: %v", slotInfoRs)
 
 	mgrRs := redisClient.SlotsMgrtState(0, 10)
