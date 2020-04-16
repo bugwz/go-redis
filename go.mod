@@ -1,4 +1,4 @@
-module github.com/hustfisher/redis
+module github.com/bugwz/goredis
 
 require (
 	github.com/onsi/ginkgo v1.8.0
