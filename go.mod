@@ -1,4 +1,4 @@
-module github.com/bugwz/goredis
+module github.com/bugwz/goredis/v6
 
 require (
 	github.com/onsi/ginkgo v1.8.0
